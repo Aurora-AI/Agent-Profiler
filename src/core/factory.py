@@ -1,9 +1,6 @@
-from collections import defaultdict
-from .interfaces import LLMProvider, InvalidConfigError
-from pydantic import BaseModel, ValidationError
-
-
 from typing import Any, Dict, Type, Optional
+from pydantic import BaseModel, ValidationError
+from src.domain.interfaces import LLMProvider, InvalidConfigError
 
 class ProviderFactory:
     _registry: Dict[str, Dict[str, Any]] = {}
