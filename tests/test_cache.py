@@ -2,6 +2,7 @@ import pytest
 import asyncio
 from src.infra.cache.memory_cache import InMemoryCache
 from src.services.generation_service import GenerationService
+from src.services.cached_service import CachedGenerationService
 from src.domain.schemas import GenerateRequest
 
 @pytest.mark.asyncio
@@ -22,7 +23,8 @@ async def test_memory_cache_expiry():
 @pytest.mark.asyncio
 async def test_service_caching_behavior():
     cache = InMemoryCache()
-    service = GenerationService(cache=cache)
+    base_service = GenerationService()
+    service = CachedGenerationService(base_service, cache)
 
     request = GenerateRequest(
         provider_name="mock",
@@ -39,7 +41,6 @@ async def test_service_caching_behavior():
     assert await cache.get(key) == "Cached"
 
     # Second call (Hit) - Verify it comes from cache logic
-    # We can check metadata latency = 0.0 or mocked manually if we wanted stricter test
     resp2 = await service.generate(request)
     assert resp2.content == "Cached"
     assert resp2.metadata['model'] == "cache"
