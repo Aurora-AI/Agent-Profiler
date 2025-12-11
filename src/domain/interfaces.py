@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Dict, Optional, TypedDict, Generic, TypeVar
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel
 
 class ProviderMetadata(TypedDict, total=False):
     model: str
@@ -11,18 +11,23 @@ class ProviderMetadata(TypedDict, total=False):
 @dataclass(frozen=True)
 class LLMResponse:
     content: str
-    prompt_tokens: int
-    completion_tokens: int
-    total_tokens: int
-    metadata: ProviderMetadata
+    prompt_tokens: int = 0
+    completion_tokens: int = 0
+    total_tokens: int = 0
+    metadata: ProviderMetadata = field(default_factory=ProviderMetadata)
 
 class LLMError(BaseException):
-    provider: str
-    code: int
-    details: str
+    def __init__(self, provider: str, code: int, details: str):
+        self.provider = provider
+        self.code = code
+        self.details = details
+        super().__init__(f"[{provider}] Error {code}: {details}")
 
-class QuotaExceededError(LLMError): ...
-class InvalidConfigError(LLMError): ...
+class QuotaExceededError(LLMError):
+    pass
+
+class InvalidConfigError(LLMError):
+    pass
 
 T = TypeVar('T', bound=BaseModel)
 
